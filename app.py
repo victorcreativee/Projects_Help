@@ -1,9 +1,11 @@
-from flask import Flask, render_template, redirect, url_for, flash, request, session
+from flask import Flask, render_template, redirect, url_for, flash, request, session, send_file
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SelectField, SubmitField
 from wtforms.validators import DataRequired, Length
 from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+import qrcode
 import os
 from functools import wraps
 
@@ -35,6 +37,14 @@ class FileUpload(db.Model):
 
     def __repr__(self):
         return f"FileUpload('{self.filename}', '{self.description}', '{self.username}')"
+#qrcodes
+@app.route('/generate_qr/<filename>')
+def generate_qr(filename):
+    qr = qrcode.make(f'{request.host_url}static/uploads/{filename}')
+    qr_path = f'static/qrcodes/{filename}.png'
+    qr.save(qr_path)
+    return send_file(qr_path, mimetype='image/png')
+
 
 class RegistrationForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=3, max=25)])
@@ -204,13 +214,27 @@ def upload_file():
     if form.validate_on_submit():
         file = request.files.get('file')
         if file and file.filename:
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
+            # Secure the filename
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+
+            # Save the uploaded file
             file.save(file_path)
-            upload = FileUpload(filename=file.filename, description=form.description.data, username=session['username'])
+
+            # Save file details to the database
+            upload = FileUpload(filename=filename, description=form.description.data, username=session['username'])
             db.session.add(upload)
             db.session.commit()
-            flash('File uploaded successfully!')
+
+            # Generate the QR code
+            qr_data = f'{request.host_url}download//{filename}'
+            qr = qrcode.make(qr_data)
+            qr_path = os.path.join('static/qrcodes', f'{filename}.png')
+            qr.save(qr_path)
+
+            flash('File uploaded successfully! QR code generated.', 'success')
             return redirect(url_for('lecturer_dashboard'))
+
     return render_template('upload.html', form=form)
 
 @app.route('/view_uploads')
@@ -252,6 +276,24 @@ def delete_upload(filename):
 @role_required('admin')
 def admin_only():
     return render_template('admin_only.html')
+
+#add route
+@app.route('/view_qr/<filename>')
+@role_required('student')
+def view_qr(filename):
+    qr_path = f'static/qrcodes/{filename}.png'
+    return render_template('view_qr.html', qr_code=qr_path)
+
+#download route
+@app.route('/download/<filename>')
+@role_required('student')
+def download_file(filename):
+    file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    if os.path.exists(file_path):
+        return send_file(file_path, as_attachment=True)
+    else:
+        flash('File not found!', 'danger')
+        return redirect(url_for('dashboard'))
 
 @app.route('/logout')
 def logout():
