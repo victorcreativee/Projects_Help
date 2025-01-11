@@ -1,0 +1,62 @@
+<!-- templates/lecturer/lecturer_dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Lecturer Dashboard{% endblock %}
+
+{% block content %}
+<div class="flex">
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-800 text-white h-screen p-4">
+        <h2 class="text-lg font-semibold mb-4">Lecturer Dashboard</h2>
+        <ul class="space-y-2">
+            <li><a href="{{ url_for('lecturer_dashboard') }}" class="block px-4 py-2 hover:bg-gray-700">Dashboard</a></li>
+            <li><a href="{{ url_for('manage_courses') }}" class="block px-4 py-2 hover:bg-gray-700">Manage Courses</a></li>
+            <li><a href="{{ url_for('manage_students') }}" class="block px-4 py-2 hover:bg-gray-700">Manage Students</a></li>
+            <li><a href="{{ url_for('upload_materials') }}" class="block px-4 py-2 hover:bg-gray-700">Upload Materials</a></li>
+            <li><a href="{{ url_for('view_uploads') }}" class="block px-4 py-2 hover:bg-gray-700">View Uploads</a></li>
+            <li><a href="{{ url_for('site_settings') }}" class="block px-4 py-2 hover:bg-gray-700">Site Settings</a></li>
+            <li><a href="{{ url_for('logout') }}" class="block px-4 py-2 hover:bg-gray-700">Logout</a></li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 p-6 bg-gray-100">
+        <h1 class="text-3xl font-bold mb-4">Welcome, {{ lecturer_name }}!</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Course Overview Card -->
+            <div class="bg-white p-4 border rounded shadow">
+                <h2 class="text-xl font-semibold">Courses</h2>
+                <p class="text-gray-600">You are teaching {{ courses_count }} courses.</p>
+                <a href="{{ url_for('manage_courses') }}" class="mt-2 inline-block text-blue-600 hover:underline">View Courses</a>
+            </div>
+
+            <!-- Recent Uploads Card -->
+            <div class="bg-white p-4 border rounded shadow">
+                <h2 class="text-xl font-semibold">Recent Uploads</h2>
+                <ul>
+                    {% for upload in recent_uploads %}
+                        <li class="text-gray-600">{{ upload.title }} - {{ upload.upload_date }}</li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('view_uploads') }}" class="mt-2 inline-block text-blue-600 hover:underline">View All Uploads</a>
+            </div>
+
+            <!-- Notifications Card -->
+            <div class="bg-white p-4 border rounded shadow">
+                <h2 class="text-xl font-semibold">Notifications</h2>
+                <p class="text-gray-600">You have {{ notifications_count }} new notifications.</p>
+                <a href="{{ url_for('view_notifications') }}" class="mt-2 inline-block text-blue-600 hover:underline">View Notifications</a>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h2 class="text-2xl font-semibold mb-4">Quick Actions</h2>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('upload_materials') }}" class="flex-1 bg-blue-600 text-white text-center py-2 rounded hover:bg-blue-500">Upload Materials</a>
+                <a href="{{ url_for('manage_students') }}" class="flex-1 bg-green-600 text-white text-center py-2 rounded hover:bg-green-500">Manage Students</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}My Uploads{% endblock %}
+
+{% block content %}
+<div class="text-center">
+    <h2 class="text-3xl font-bold mb-4">Your Uploaded Files</h2>
+    <table class="min-w-full bg-white shadow-md rounded-lg overflow-hidden">
+        <thead>
+            <tr>
+                <th class="py-2 bg-gray-200">Title</th>
+                <th class="py-2 bg-gray-200">Description</th>
+                <th class="py-2 bg-gray-200">File</th>
+                <th class="py-2 bg-gray-200">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for upload in uploads %}
+                <tr>
+                    <td class="p-4">{{ upload.title }}</td>
+                    <td class="p-4">{{ upload.description }}</td>
+                    <td class="p-4">
+                        <a href="{{ url_for('download_file', filename=upload.file_name) }}" class="text-blue-500 hover:underline">Download</a>
+                    </td>
+                    <td class="p-4">
+                        <form action="{{ url_for('delete_upload', upload_id=upload.id) }}" method="POST" class="inline-block">
+                            <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-700">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            {% else %}
+                <tr>
+                    <td colspan="4" class="p-4 text-center text-gray-600">No files uploaded yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

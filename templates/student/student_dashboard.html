@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard{% endblock %}
+
+{% block content %}
+<h1>Welcome, {{ current_user.name }}!</h1>
+<h2>Your Uploads</h2>
+<ul>
+    {% for upload in uploads %}
+        <li>{{ upload.filename }}</li>
+    {% endfor %}
+</ul>
+{% endblock %}
